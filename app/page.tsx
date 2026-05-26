@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import TabsClient from "./TabsClient";
+export const revalidate = 0;
 
 type Equipo = {
   id: number;
