@@ -49,19 +49,26 @@ export default function PartidosClient() {
 
   async function eliminar(id: number) {
     if (!confirm("¿Seguro que querés eliminar este partido?")) return;
-    await supabase.from("partidos").delete().eq("id", id);
+    const { error } = await supabase
+      .from("partidos")
+      .delete()
+      .eq("id", Number(id));
+    console.log("Error eliminar:", error);
     setMensaje("🗑️ Partido eliminado.");
-    cargarPartidos();
+    setTimeout(() => cargarPartidos(), 500);
   }
 
   async function guardarEdicion(id: number) {
-    await supabase
+    console.log("ID tipo:", typeof id, "valor:", id);
+    const { data, error } = await supabase
       .from("partidos")
       .update({ goles_local: golesLocal, goles_visitante: golesVisitante })
-      .eq("id", id);
+      .eq("id", Number(id))
+      .select();
+    console.log("Resultado:", data, error);
     setEditandoId(null);
     setMensaje("✅ Partido actualizado.");
-    cargarPartidos();
+    setTimeout(() => cargarPartidos(), 500);
   }
 
   function formatFecha(fecha: string) {
