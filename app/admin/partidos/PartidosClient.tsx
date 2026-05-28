@@ -51,17 +51,13 @@ export default function PartidosClient() {
 
   async function eliminar(id: number) {
     if (!confirm("¿Seguro que querés eliminar este partido?")) return;
-    const { error } = await supabase
-      .from("partidos")
-      .delete()
-      .eq("id", Number(id));
-    console.log("Error eliminar:", error);
+    await supabase.from("partidos").delete().eq("id", Number(id));
     setMensaje("🗑️ Partido eliminado.");
     setTimeout(() => cargarPartidos(), 500);
   }
 
   async function guardarEdicion(id: number) {
-    const { data, error } = await supabase
+    await supabase
       .from("partidos")
       .update({
         goles_local: jugado ? golesLocal : null,
@@ -71,7 +67,6 @@ export default function PartidosClient() {
       })
       .eq("id", Number(id))
       .select();
-    console.log("Resultado:", data, error);
     setEditandoId(null);
     setMensaje("✅ Partido actualizado.");
     setTimeout(() => cargarPartidos(), 500);
@@ -91,19 +86,20 @@ export default function PartidosClient() {
   }
 
   return (
-    <main className="min-h-screen p-6 max-w-2xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-6 max-w-2xl mx-auto">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">Partidos cargados</h1>
+        <h1 className="text-lg sm:text-2xl font-bold text-white">Partidos</h1>
         <div className="flex gap-2">
           <Link
             href="/admin"
-            className="bg-gray-600 hover:bg-gray-500 text-white text-sm font-bold px-4 py-2 rounded"
+            className="bg-gray-600 hover:bg-gray-500 text-white text-xs sm:text-sm font-bold px-3 py-2 rounded"
           >
             ← Volver
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="bg-red-700 hover:bg-red-600 text-white text-sm font-bold px-4 py-2 rounded"
+            className="bg-red-700 hover:bg-red-600 text-white text-xs sm:text-sm font-bold px-3 py-2 rounded"
           >
             Cerrar sesión
           </button>
@@ -119,13 +115,13 @@ export default function PartidosClient() {
           <p className="text-gray-400 text-center">No hay partidos cargados.</p>
         )}
         {partidos.map((p) => (
-          <div key={p.id} className="bg-gray-800 p-4 rounded-lg">
+          <div key={p.id} className="bg-gray-800 p-3 sm:p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-green-400 text-sm font-semibold">
+              <span className="text-green-400 text-xs sm:text-sm font-semibold">
                 {p.serie?.nombre}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-400 text-xs">
                   {formatFecha(p.fecha)}
                 </span>
                 <span
@@ -138,8 +134,8 @@ export default function PartidosClient() {
 
             {editandoId === p.id ? (
               <div className="space-y-3 mt-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-white text-sm w-2/5 text-right">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <span className="text-white text-xs sm:text-sm flex-1 text-right leading-tight">
                     {p.local?.nombre}
                   </span>
                   <input
@@ -148,85 +144,87 @@ export default function PartidosClient() {
                     value={golesLocal}
                     onChange={(e) => setGolesLocal(Number(e.target.value))}
                     disabled={!jugado}
-                    className="w-12 text-center bg-gray-700 text-white rounded p-1 disabled:opacity-40"
+                    className="w-10 sm:w-12 text-center bg-gray-700 text-white rounded p-1 text-sm disabled:opacity-40"
                   />
-                  <span className="text-white">-</span>
+                  <span className="text-white text-sm">-</span>
                   <input
                     type="number"
                     min={0}
                     value={golesVisitante}
                     onChange={(e) => setGolesVisitante(Number(e.target.value))}
                     disabled={!jugado}
-                    className="w-12 text-center bg-gray-700 text-white rounded p-1 disabled:opacity-40"
+                    className="w-10 sm:w-12 text-center bg-gray-700 text-white rounded p-1 text-sm disabled:opacity-40"
                   />
-                  <span className="text-white text-sm w-2/5">
+                  <span className="text-white text-xs sm:text-sm flex-1 leading-tight">
                     {p.visitante?.nombre}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <label className="text-gray-300 text-sm">Fecha:</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-gray-400 text-xs">Fecha</label>
                     <input
                       type="date"
                       value={fecha}
                       onChange={(e) => setFecha(e.target.value)}
-                      className="bg-gray-700 text-white rounded p-1 text-sm"
+                      className="w-full mt-1 bg-gray-700 text-white rounded p-1.5 text-xs sm:text-sm"
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-gray-300 text-sm">¿Jugado?</label>
-                    <input
-                      type="checkbox"
-                      checked={jugado}
-                      onChange={(e) => setJugado(e.target.checked)}
-                      className="w-4 h-4 accent-green-600"
-                    />
+                  <div className="flex items-end pb-1.5">
+                    <div className="flex items-center gap-2">
+                      <label className="text-gray-400 text-xs">¿Jugado?</label>
+                      <input
+                        type="checkbox"
+                        checked={jugado}
+                        onChange={(e) => setJugado(e.target.checked)}
+                        className="w-4 h-4 accent-green-600"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => guardarEdicion(p.id)}
-                    className="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1 rounded"
+                    className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs sm:text-sm font-bold py-2 rounded"
                   >
                     Guardar
                   </button>
                   <button
                     onClick={() => setEditandoId(null)}
-                    className="bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded"
+                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white text-xs sm:text-sm font-bold py-2 rounded"
                   >
                     Cancelar
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-white font-medium text-right w-2/5">
+              <div className="flex items-center gap-1 sm:gap-2 mt-2">
+                <span className="text-white text-xs sm:text-sm font-medium flex-1 text-right leading-tight">
                   {p.local?.nombre}
                 </span>
                 {p.jugado ? (
-                  <span className="text-green-400 font-bold text-xl mx-3">
+                  <span className="text-green-400 font-bold text-sm sm:text-base min-w-[44px] text-center bg-gray-700 rounded-lg px-1.5 py-0.5 flex-shrink-0">
                     {p.goles_local} - {p.goles_visitante}
                   </span>
                 ) : (
-                  <span className="text-gray-500 font-bold text-xl mx-3">
+                  <span className="text-gray-500 font-bold text-sm min-w-[44px] text-center bg-gray-700 rounded-lg px-1.5 py-0.5 flex-shrink-0">
                     vs
                   </span>
                 )}
-                <span className="text-white font-medium w-2/5">
+                <span className="text-white text-xs sm:text-sm font-medium flex-1 leading-tight">
                   {p.visitante?.nombre}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                   <button
                     onClick={() => iniciarEdicion(p)}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-white text-xs px-3 py-1 rounded"
+                    className="bg-yellow-600 hover:bg-yellow-500 text-white text-xs px-2 sm:px-3 py-1 rounded"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => eliminar(p.id)}
-                    className="bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1 rounded"
+                    className="bg-red-700 hover:bg-red-600 text-white text-xs px-2 sm:px-3 py-1 rounded"
                   >
                     Eliminar
                   </button>
