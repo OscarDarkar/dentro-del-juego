@@ -54,7 +54,7 @@ export default function TabsClient({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 pb-12">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 ">
       {/* Header */}
       <div
         className="flex items-center gap-3 mb-5 pb-4"
@@ -413,7 +413,7 @@ export default function TabsClient({
         href="https://www.facebook.com/leonciomartires/?locale=es_LA"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-2 py-2 px-4 text-xs"
+        className="flex items-center justify-center gap-2 py-4 px-4 text-xs mt-8 rounded-xl"
         style={bannerStyle}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#4ade80">
