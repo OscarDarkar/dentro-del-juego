@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import React from "react";
 
 type Equipo = {
   id: number;
@@ -46,8 +47,14 @@ export default function TabsClient({
     return `${day}/${month}/${year}`;
   }
 
+  const bannerStyle: React.CSSProperties = {
+    background: "rgba(10,15,46,0.85)",
+    borderTop: "0.5px solid rgba(255,255,255,0.1)",
+    backdropFilter: "blur(8px)",
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 pb-12">
       {/* Header */}
       <div
         className="flex items-center gap-3 mb-5 pb-4"
@@ -400,6 +407,38 @@ export default function TabsClient({
           ))}
         </div>
       )}
+
+      {/* Banner periodista */}
+      <a
+        href="https://www.facebook.com/leonciomartires/?locale=es_LA"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-2 py-2 px-4 text-xs"
+        style={bannerStyle}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#4ade80">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+        </svg>
+        <span style={{ color: "rgba(255,255,255,0.5)" }}>
+          Seguí los partidos en vivo en
+        </span>
+        <span className="font-semibold" style={{ color: "#4ade80" }}>
+          San Patricio Portal Digital
+        </span>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          style={{ color: "rgba(255,255,255,0.4)" }}
+        >
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          <polyline points="15 3 21 3 21 9" />
+          <line x1="10" y1="14" x2="21" y2="3" />
+        </svg>
+      </a>
     </div>
   );
 }
