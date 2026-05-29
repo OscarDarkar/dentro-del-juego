@@ -128,7 +128,7 @@ export default function TabsClient({
             </h1>
           </div>
         </div>
-        <div className="text-right hidden sm:block">
+        <div className="text-right">
           <p
             className="text-xs font-semibold"
             style={{ color: "rgba(255,255,255,0.7)" }}
