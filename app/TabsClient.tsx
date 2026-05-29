@@ -56,36 +56,90 @@ export default function TabsClient({
   return (
     <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 ">
       {/* Header */}
+      {/* Navbar */}
       <div
-        className="flex items-center gap-3 mb-5 pb-4"
+        className="flex items-center justify-between mb-5 pb-4"
         style={{ borderBottom: "0.5px solid rgba(255,255,255,0.12)" }}
       >
-        <div
-          className="rounded-lg w-9 h-9 flex items-center justify-center flex-shrink-0"
-          style={{
-            background: "rgba(34,197,94,0.25)",
-            border: "0.5px solid rgba(34,197,94,0.4)",
-          }}
-        >
+        <div className="flex items-center gap-3">
           <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#4ade80"
-            strokeWidth="2"
+            width="36"
+            height="36"
+            viewBox="0 0 120 120"
+            className="flex-shrink-0"
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            <path d="M2 12h20" />
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              fill="#0d1b4b"
+              stroke="#4ade80"
+              strokeWidth="2.5"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="38"
+              fill="none"
+              stroke="#4ade80"
+              strokeWidth="1.5"
+              opacity="0.4"
+            />
+            <line
+              x1="60"
+              y1="8"
+              x2="60"
+              y2="112"
+              stroke="#4ade80"
+              strokeWidth="1.5"
+              opacity="0.5"
+            />
+            <line
+              x1="8"
+              y1="60"
+              x2="112"
+              y2="60"
+              stroke="#4ade80"
+              strokeWidth="1.5"
+              opacity="0.5"
+            />
+            <path
+              d="M 20 30 Q 60 10 100 30"
+              fill="none"
+              stroke="#4ade80"
+              strokeWidth="1.5"
+              opacity="0.5"
+            />
+            <path
+              d="M 20 90 Q 60 110 100 90"
+              fill="none"
+              stroke="#4ade80"
+              strokeWidth="1.5"
+              opacity="0.5"
+            />
+            <circle cx="60" cy="60" r="5" fill="#4ade80" />
           </svg>
+          <div>
+            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight leading-tight">
+              DENTRO{" "}
+              <span style={{ color: "#4ade80", fontWeight: 300 }}>
+                DEL JUEGO
+              </span>
+            </h1>
+          </div>
         </div>
-        <div>
-          <h1 className="text-lg sm:text-xl font-semibold text-white">
-            Dentro el Juego
-          </h1>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Liga Misionera Del Sur · Temporada 2026
+        <div className="text-right hidden sm:block">
+          <p
+            className="text-xs font-semibold"
+            style={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            Temporada 2026
+          </p>
+          <p
+            className="text-xs"
+            style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}
+          >
+            Liga Misionera del Sur
           </p>
         </div>
       </div>
