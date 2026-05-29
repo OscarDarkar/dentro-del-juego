@@ -213,14 +213,10 @@ export default function TabsClient({
                       <th className="p-2 text-center">PG</th>
                       <th className="p-2 text-center">PE</th>
                       <th className="p-2 text-center">PP</th>
-                      <th className="p-2 text-center hidden sm:table-cell">
-                        GF
-                      </th>
-                      <th className="p-2 text-center hidden sm:table-cell">
-                        GC
-                      </th>
-                      <th className="p-2 text-center">DG</th>
                       <th className="p-2 text-center font-bold">PTS</th>
+                      <th className="p-2 text-center">GF</th>
+                      <th className="p-2 text-center">GC</th>
+                      <th className="p-2 text-center">DG</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -247,30 +243,20 @@ export default function TabsClient({
                         <td className="p-2 text-center">{equipo.PG}</td>
                         <td className="p-2 text-center">{equipo.PE}</td>
                         <td className="p-2 text-center">{equipo.PP}</td>
-                        <td className="p-2 text-center hidden sm:table-cell">
-                          {equipo.GF}
-                        </td>
-                        <td className="p-2 text-center hidden sm:table-cell">
-                          {equipo.GC}
-                        </td>
-                        <td className="p-2 text-center">{equipo.DG}</td>
                         <td
                           className="p-2 text-center font-bold"
                           style={{ color: "#4ade80" }}
                         >
                           {equipo.PTS}
                         </td>
+                        <td className="p-2 text-center">{equipo.GF}</td>
+                        <td className="p-2 text-center">{equipo.GC}</td>
+                        <td className="p-2 text-center">{equipo.DG}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p
-                className="text-xs mt-1 sm:hidden"
-                style={{ color: "rgba(255,255,255,0.2)" }}
-              >
-                * GF y GC visibles en pantalla grande
-              </p>
             </section>
           ))}
         </div>
