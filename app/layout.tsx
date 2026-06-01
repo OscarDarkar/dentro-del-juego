@@ -9,8 +9,24 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Dentro del Juego",
-  description: "Liga Misionera Del Sur - Tabla de posiciones y resultados",
+  title: "Dentro del Juego | Liga Misionera del Sur",
+  description:
+    "Tabla de posiciones, resultados y fixture de la Liga Misionera del Sur. Serie A, Serie B y Serie C.",
+  keywords: [
+    "liga misionera del sur",
+    "fútbol misiones",
+    "tabla de posiciones",
+    "resultados fútbol paraguay",
+  ],
+  openGraph: {
+    title: "Dentro del Juego | Liga Misionera del Sur",
+    description:
+      "Tabla de posiciones, resultados y fixture de la Liga Misionera del Sur.",
+    url: "https://dentro-del-juego-one.vercel.app",
+    siteName: "Dentro del Juego",
+    locale: "es_PY",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
