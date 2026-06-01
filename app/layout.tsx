@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     "fútbol misiones",
     "tabla de posiciones",
     "resultados fútbol paraguay",
+    "dentro del juego",
   ],
   openGraph: {
     title: "Dentro del Juego | Liga Misionera del Sur",
