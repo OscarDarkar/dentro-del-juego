@@ -5,6 +5,7 @@ export const revalidate = 0;
 type Equipo = {
   id: number;
   nombre: string;
+  escudo: string | null;
   PJ: number;
   PG: number;
   PE: number;
@@ -28,7 +29,7 @@ type Partido = {
 async function getPosiciones(serieId: number): Promise<Equipo[]> {
   const { data: equipos } = await supabase
     .from("equipos")
-    .select("id, nombre")
+    .select("id, nombre, escudo")
     .eq("serie_id", serieId);
 
   const { data: partidos } = await supabase
@@ -43,6 +44,7 @@ async function getPosiciones(serieId: number): Promise<Equipo[]> {
     tabla[e.id] = {
       id: e.id,
       nombre: e.nombre,
+      escudo: e.escudo ?? null,
       PJ: 0,
       PG: 0,
       PE: 0,

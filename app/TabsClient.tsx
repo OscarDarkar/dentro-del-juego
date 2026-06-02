@@ -5,6 +5,7 @@ import React from "react";
 type Equipo = {
   id: number;
   nombre: string;
+  escudo: string | null;
   PJ: number;
   PG: number;
   PE: number;
@@ -236,7 +237,14 @@ export default function TabsClient({
                         >
                           {i + 1}
                         </td>
-                        <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none">
+                        <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
+                          <img
+                            src={equipo.escudo ?? "/escudos/generico.svg"}
+                            alt={equipo.nombre}
+                            width={20}
+                            height={20}
+                            className="object-contain flex-shrink-0"
+                          />
                           {equipo.nombre}
                         </td>
                         <td className="p-2 text-center">{equipo.PJ}</td>
