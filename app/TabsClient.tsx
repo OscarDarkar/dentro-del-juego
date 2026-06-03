@@ -353,10 +353,10 @@ export default function TabsClient({
                           <td className="p-2 text-center">{equipo.PG}</td>
                           <td className="p-2 text-center">{equipo.PE}</td>
                           <td className="p-2 text-center">{equipo.PP}</td>
+                          <td className="p-2 text-center">{equipo.PTS}</td>
                           <td className="p-2 text-center">{equipo.GF}</td>
                           <td className="p-2 text-center">{equipo.GC}</td>
                           <td className="p-2 text-center">{equipo.DG}</td>
-                          <td className="p-2 text-center">{equipo.PTS}</td>
                         </tr>
                       ))}
                     </tbody>
