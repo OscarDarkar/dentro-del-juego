@@ -65,9 +65,86 @@ export default function TabsClient({
     return <span style={{ color: "rgba(255,255,255,0.3)" }}>—</span>;
   }
 
+  const BannerInstagram = () => (
+    <a
+      href="https://www.instagram.com/_oscarruizd/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "12px 14px",
+        borderRadius: "10px",
+        border: "0.5px solid rgba(195,100,255,0.3)",
+        background: "rgba(195,100,255,0.06)",
+        textDecoration: "none",
+      }}
+    >
+      <div
+        style={{
+          width: "36px",
+          height: "36px",
+          borderRadius: "8px",
+          background: "rgba(195,100,255,0.2)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#c864ff"
+          strokeWidth="2"
+        >
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="1" fill="#c864ff" stroke="none" />
+        </svg>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: "13px",
+            fontWeight: 700,
+            color: "#c864ff",
+            fontFamily: "sans-serif",
+          }}
+        >
+          ¿Querés anunciar tu negocio aquí?
+        </div>
+        <div
+          style={{
+            fontSize: "10px",
+            color: "rgba(255,255,255,0.5)",
+            fontFamily: "sans-serif",
+          }}
+        >
+          Contáctame por Instagram · @_oscarruizd
+        </div>
+      </div>
+      <div
+        style={{
+          fontSize: "10px",
+          color: "rgba(195,100,255,0.6)",
+          fontFamily: "sans-serif",
+          border: "0.5px solid rgba(195,100,255,0.3)",
+          padding: "4px 10px",
+          borderRadius: "6px",
+          flexShrink: 0,
+        }}
+      >
+        Contactar
+      </div>
+    </a>
+  );
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 ">
-      {/* Header */}
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-6">
       {/* Navbar */}
       <div
         className="flex items-center justify-between mb-5 pb-4"
@@ -143,18 +220,21 @@ export default function TabsClient({
         <div className="text-right">
           <p
             className="text-xs font-semibold"
-            style={{ color: "rgba(255,255,255,0.7)" }}
+            style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px" }}
           >
             Temporada 2026
           </p>
           <p
             className="text-xs"
-            style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}
+            style={{ color: "rgba(255,255,255,0.35)", fontSize: "12.5px" }}
           >
             Liga Misionera del Sur
           </p>
         </div>
       </div>
+
+      {/* Banner encima de la tabla */}
+      <BannerInstagram />
 
       {/* Tabs */}
       <div
@@ -190,99 +270,107 @@ export default function TabsClient({
 
       {/* Posiciones */}
       {tab === "posiciones" && (
-        <div className="space-y-8">
-          {posiciones.map((serie) => (
-            <section key={serie.id}>
-              <div className="flex items-center gap-2 mb-3">
+        <div className="space-y-6">
+          {posiciones.map((serie, index) => (
+            <React.Fragment key={serie.id}>
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: "#4ade80" }}
+                  ></div>
+                  <h2
+                    className="text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.45)" }}
+                  >
+                    {serie.nombre}
+                  </h2>
+                </div>
                 <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: "#4ade80" }}
-                ></div>
-                <h2
-                  className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: "rgba(255,255,255,0.45)" }}
+                  className="rounded-xl overflow-x-auto"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "0.5px solid rgba(255,255,255,0.12)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+                  }}
                 >
-                  {serie.nombre}
-                </h2>
-              </div>
-              <div
-                className="rounded-xl overflow-x-auto"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "0.5px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
-                }}
-              >
-                <table className="w-full text-xs min-w-[340px]">
-                  <thead>
-                    <tr
-                      style={{ background: "rgba(0,0,0,0.2)" }}
-                      className="text-gray-400"
-                    >
-                      <th className="p-2 text-center w-6">#</th>
-                      <th className="p-2 text-left">Equipo</th>
-                      <th className="p-2 text-center">PJ</th>
-                      <th className="p-2 text-center">PG</th>
-                      <th className="p-2 text-center">PE</th>
-                      <th className="p-2 text-center">PP</th>
-                      <th className="p-2 text-center font-bold">PTS</th>
-                      <th className="p-2 text-center">GF</th>
-                      <th className="p-2 text-center">GC</th>
-                      <th className="p-2 text-center">DG</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {serie.posiciones.map((equipo, i) => (
+                  <table
+                    className="w-full text-xs"
+                    style={{ minWidth: "500px" }}
+                  >
+                    <thead>
                       <tr
-                        key={equipo.id}
-                        style={{
-                          borderTop: "0.5px solid rgba(255,255,255,0.07)",
-                          background:
-                            i === 0 ? "rgba(52,211,153,0.1)" : "transparent",
-                        }}
-                        className={i === 0 ? "text-green-300" : "text-gray-300"}
+                        style={{ background: "rgba(0,0,0,0.2)" }}
+                        className="text-gray-400"
                       >
-                        <td
-                          className="p-2 text-center"
-                          style={{ color: "rgba(255,255,255,0.3)" }}
-                        >
-                          <div className="flex flex-col items-center">
-                            <span>{i + 1}</span>
-                            <span className="text-xs">
-                              {getTendencia(i + 1, equipo.posicion_anterior)}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
-                          <img
-                            src={equipo.escudo ?? "/escudos/generico.svg"}
-                            alt={equipo.nombre}
-                            width={20}
-                            height={20}
-                            className="object-contain flex-shrink-0"
-                          />
-                          {equipo.nombre}
-                        </td>
-                        <td className="p-2 text-center">{equipo.PJ}</td>
-                        <td className="p-2 text-center">{equipo.PG}</td>
-                        <td className="p-2 text-center">{equipo.PE}</td>
-                        <td className="p-2 text-center">{equipo.PP}</td>
-                        <td
-                          className="p-2 text-center font-bold"
-                          style={{ color: "#4ade80" }}
-                        >
-                          {equipo.PTS}
-                        </td>
-                        <td className="p-2 text-center">{equipo.GF}</td>
-                        <td className="p-2 text-center">{equipo.GC}</td>
-                        <td className="p-2 text-center">{equipo.DG}</td>
+                        <th className="p-2 text-center w-6">#</th>
+                        <th className="p-2 text-left">Equipo</th>
+                        <th className="p-2 text-center">PJ</th>
+                        <th className="p-2 text-center">PG</th>
+                        <th className="p-2 text-center">PE</th>
+                        <th className="p-2 text-center">PP</th>
+                        <th className="p-2 text-center">PTS</th>
+                        <th className="p-2 text-center">GF</th>
+                        <th className="p-2 text-center">GC</th>
+                        <th className="p-2 text-center">DG</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                    </thead>
+                    <tbody>
+                      {serie.posiciones.map((equipo, i) => (
+                        <tr
+                          key={equipo.id}
+                          style={{
+                            borderTop: "0.5px solid rgba(255,255,255,0.07)",
+                            background:
+                              i === 0 ? "rgba(52,211,153,0.1)" : "transparent",
+                          }}
+                          className={
+                            i === 0 ? "text-green-300" : "text-gray-300"
+                          }
+                        >
+                          <td
+                            className="p-2 text-center"
+                            style={{ color: "rgba(255,255,255,0.3)" }}
+                          >
+                            <div className="flex flex-col items-center">
+                              <span>{i + 1}</span>
+                              <span className="text-xs">
+                                {getTendencia(i + 1, equipo.posicion_anterior)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
+                            <img
+                              src={equipo.escudo ?? "/escudos/generico.svg"}
+                              alt={equipo.nombre}
+                              width={20}
+                              height={20}
+                              className="object-contain flex-shrink-0"
+                            />
+                            {equipo.nombre}
+                          </td>
+                          <td className="p-2 text-center">{equipo.PJ}</td>
+                          <td className="p-2 text-center">{equipo.PG}</td>
+                          <td className="p-2 text-center">{equipo.PE}</td>
+                          <td className="p-2 text-center">{equipo.PP}</td>
+                          <td className="p-2 text-center">{equipo.GF}</td>
+                          <td className="p-2 text-center">{equipo.GC}</td>
+                          <td className="p-2 text-center">{equipo.DG}</td>
+                          <td className="p-2 text-center">{equipo.PTS}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* Banner entre Serie A y B */}
+              {index === 0 && <BannerInstagram />}
+            </React.Fragment>
           ))}
+
+          {/* Banner debajo de Serie C */}
+          <BannerInstagram />
         </div>
       )}
 
