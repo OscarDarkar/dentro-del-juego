@@ -6,6 +6,7 @@ type Equipo = {
   id: number;
   nombre: string;
   escudo: string | null;
+  posicion_anterior: number | null;
   PJ: number;
   PG: number;
   PE: number;
@@ -21,8 +22,8 @@ type Partido = {
   fecha: string;
   goles_local: number | null;
   goles_visitante: number | null;
-  local: { nombre: string };
-  visitante: { nombre: string };
+  local: { nombre: string; escudo: string | null };
+  visitante: { nombre: string; escudo: string | null };
   serie: { nombre: string };
 };
 
@@ -53,6 +54,16 @@ export default function TabsClient({
     borderTop: "0.5px solid rgba(255,255,255,0.1)",
     backdropFilter: "blur(8px)",
   };
+
+  function getTendencia(posActual: number, posAnterior: number | null) {
+    if (posAnterior === null)
+      return <span style={{ color: "rgba(255,255,255,0.3)" }}>—</span>;
+    if (posActual < posAnterior)
+      return <span style={{ color: "#4ade80" }}>▲</span>;
+    if (posActual > posAnterior)
+      return <span style={{ color: "#f87171" }}>▼</span>;
+    return <span style={{ color: "rgba(255,255,255,0.3)" }}>—</span>;
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 ">
@@ -235,7 +246,12 @@ export default function TabsClient({
                           className="p-2 text-center"
                           style={{ color: "rgba(255,255,255,0.3)" }}
                         >
-                          {i + 1}
+                          <div className="flex flex-col items-center">
+                            <span>{i + 1}</span>
+                            <span className="text-xs">
+                              {getTendencia(i + 1, equipo.posicion_anterior)}
+                            </span>
+                          </div>
                         </td>
                         <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
                           <img
@@ -338,9 +354,18 @@ export default function TabsClient({
                             borderTop: "0.5px solid rgba(255,255,255,0.06)",
                           }}
                         >
-                          <span className="flex-1 text-right text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                            {p.local?.nombre}
-                          </span>
+                          <div className="flex-1 flex items-center justify-end gap-1">
+                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
+                              {p.local?.nombre}
+                            </span>
+                            <img
+                              src={p.local?.escudo ?? "/escudos/generico.svg"}
+                              alt={p.local?.nombre}
+                              width={20}
+                              height={20}
+                              className="object-contain flex-shrink-0"
+                            />
+                          </div>
                           <span
                             className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
                             style={{
@@ -348,11 +373,22 @@ export default function TabsClient({
                               background: "rgba(0,0,0,0.2)",
                             }}
                           >
-                            {p.goles_local} – {p.goles_visitante}
+                            {p.goles_local} - {p.goles_visitante}
                           </span>
-                          <span className="flex-1 text-left text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                            {p.visitante?.nombre}
-                          </span>
+                          <div className="flex-1 flex items-center justify-start gap-1">
+                            <img
+                              src={
+                                p.visitante?.escudo ?? "/escudos/generico.svg"
+                              }
+                              alt={p.visitante?.nombre}
+                              width={20}
+                              height={20}
+                              className="object-contain flex-shrink-0"
+                            />
+                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
+                              {p.visitante?.nombre}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -431,9 +467,18 @@ export default function TabsClient({
                             borderTop: "0.5px solid rgba(255,255,255,0.06)",
                           }}
                         >
-                          <span className="flex-1 text-right text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                            {p.local?.nombre}
-                          </span>
+                          <div className="flex-1 flex items-center justify-end gap-1">
+                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
+                              {p.local?.nombre}
+                            </span>
+                            <img
+                              src={p.local?.escudo ?? "/escudos/generico.svg"}
+                              alt={p.local?.nombre}
+                              width={20}
+                              height={20}
+                              className="object-contain flex-shrink-0"
+                            />
+                          </div>
                           <span
                             className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
                             style={{
@@ -443,9 +488,20 @@ export default function TabsClient({
                           >
                             vs
                           </span>
-                          <span className="flex-1 text-left text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                            {p.visitante?.nombre}
-                          </span>
+                          <div className="flex-1 flex items-center justify-start gap-1">
+                            <img
+                              src={
+                                p.visitante?.escudo ?? "/escudos/generico.svg"
+                              }
+                              alt={p.visitante?.nombre}
+                              width={20}
+                              height={20}
+                              className="object-contain flex-shrink-0"
+                            />
+                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
+                              {p.visitante?.nombre}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>

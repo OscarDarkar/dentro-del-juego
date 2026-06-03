@@ -6,6 +6,7 @@ type Equipo = {
   id: number;
   nombre: string;
   escudo: string | null;
+  posicion_anterior: number | null;
   PJ: number;
   PG: number;
   PE: number;
@@ -21,15 +22,15 @@ type Partido = {
   fecha: string;
   goles_local: number | null;
   goles_visitante: number | null;
-  local: { nombre: string };
-  visitante: { nombre: string };
+  local: { nombre: string; escudo: string | null };
+  visitante: { nombre: string; escudo: string | null };
   serie: { nombre: string };
 };
 
 async function getPosiciones(serieId: number): Promise<Equipo[]> {
   const { data: equipos } = await supabase
     .from("equipos")
-    .select("id, nombre, escudo")
+    .select("id, nombre, escudo, posicion_anterior")
     .eq("serie_id", serieId);
 
   const { data: partidos } = await supabase
@@ -45,6 +46,7 @@ async function getPosiciones(serieId: number): Promise<Equipo[]> {
       id: e.id,
       nombre: e.nombre,
       escudo: e.escudo ?? null,
+      posicion_anterior: e.posicion_anterior ?? null,
       PJ: 0,
       PG: 0,
       PE: 0,
@@ -108,8 +110,8 @@ export default async function Home() {
     .select(
       `
       id, fecha, goles_local, goles_visitante,
-      local:local_id(nombre),
-      visitante:visitante_id(nombre),
+      local:local_id(nombre, escudo),
+      visitante:visitante_id(nombre, escudo),
       serie:serie_id(nombre)
     `,
     )
@@ -134,8 +136,8 @@ export default async function Home() {
     .select(
       `
       id, fecha, goles_local, goles_visitante,
-      local:local_id(nombre),
-      visitante:visitante_id(nombre),
+      local:local_id(nombre, escudo),
+      visitante:visitante_id(nombre, escudo),
       serie:serie_id(nombre)
     `,
     )
