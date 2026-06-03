@@ -52,7 +52,6 @@ export default function TabsClient({
   const bannerStyle: React.CSSProperties = {
     background: "rgba(10,15,46,0.85)",
     borderTop: "0.5px solid rgba(255,255,255,0.1)",
-    backdropFilter: "blur(8px)",
   };
 
   function getTendencia(posActual: number, posAnterior: number | null) {
