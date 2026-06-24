@@ -76,7 +76,7 @@ export default function TabsClient({
       .map((e, i) => `${i + 1}. ${e.nombre} - ${e.PTS} pts`)
       .join("\n");
 
-    const mensaje = `⚽ *${serieNombre} - Liga Misionera Del Sur*\n\n${texto}\n\n📱 Seguí la liga en:\nhttps://dentro-del-juego-five.vercel.app`;
+    const mensaje = `⚽ *${serieNombre} - Liga Misionera Del Sur*\n\n${texto}\n\n📱 Seguí la LMS en:\nhttps://dentro-del-juego-five.vercel.app`;
 
     if (navigator.share) {
       await navigator.share({ text: mensaje });
