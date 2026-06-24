@@ -33,16 +33,22 @@ export default function TabsClient({
   porFecha,
   fechasFixture,
   porFechaFixture,
+  posicionesFase1,
+  fechasFase1,
+  porFechaFase1,
 }: {
   posiciones: { id: number; nombre: string; posiciones: Equipo[] }[];
   fechas: string[];
   porFecha: Record<string, Record<string, Partido[]>>;
   fechasFixture: string[];
   porFechaFixture: Record<string, Record<string, Partido[]>>;
+  posicionesFase1: { id: number; nombre: string; posiciones: Equipo[] }[];
+  fechasFase1: string[];
+  porFechaFase1: Record<string, Record<string, Partido[]>>;
 }) {
-  const [tab, setTab] = useState<"posiciones" | "resultados" | "fixture">(
-    "posiciones",
-  );
+  const [tab, setTab] = useState<
+    "posiciones" | "resultados" | "fixture" | "fase1"
+  >("posiciones");
 
   function formatFecha(fecha: string) {
     const [year, month, day] = fecha.split("-");
@@ -63,6 +69,21 @@ export default function TabsClient({
     if (posActual > posAnterior)
       return <span style={{ color: "#f87171" }}>▼</span>;
     return <span style={{ color: "rgba(255,255,255,0.3)" }}>—</span>;
+  }
+
+  async function compartirTabla(serieNombre: string, posiciones: Equipo[]) {
+    const texto = posiciones
+      .map((e, i) => `${i + 1}. ${e.nombre} - ${e.PTS} pts`)
+      .join("\n");
+
+    const mensaje = `⚽ *${serieNombre} - Liga Misionera Del Sur*\n\n${texto}\n\n📱 Seguí la liga en:\nhttps://dentro-del-juego-five.vercel.app`;
+
+    if (navigator.share) {
+      await navigator.share({ text: mensaje });
+    } else {
+      await navigator.clipboard.writeText(mensaje);
+      alert("¡Tabla copiada al portapapeles!");
+    }
   }
 
   const BannerInstagram = () => (
@@ -124,7 +145,7 @@ export default function TabsClient({
             fontFamily: "sans-serif",
           }}
         >
-          Contáctame por Instagram · @_oscarruizd
+          Contactanos por Instagram · @_oscarruizd
         </div>
       </div>
       <div
@@ -141,6 +162,247 @@ export default function TabsClient({
         Contactar
       </div>
     </a>
+  );
+
+  const TablaPostiones = ({
+    series,
+  }: {
+    series: { id: number; nombre: string; posiciones: Equipo[] }[];
+  }) => (
+    <div className="space-y-6">
+      {series.map((serie, index) => (
+        <React.Fragment key={serie.id}>
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: "#4ade80" }}
+                ></div>
+                <h2
+                  className="text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: "rgba(255,255,255,0.45)" }}
+                >
+                  {serie.nombre}
+                </h2>
+              </div>
+              <button
+                onClick={() => compartirTabla(serie.nombre, serie.posiciones)}
+                className="flex items-center gap-1 text-xs px-3 py-1 rounded-lg"
+                style={{
+                  background: "rgba(34,197,94,0.15)",
+                  color: "#4ade80",
+                  border: "0.5px solid rgba(34,197,94,0.3)",
+                }}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                Compartir
+              </button>
+            </div>
+            <div
+              className="rounded-xl overflow-x-auto"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "0.5px solid rgba(255,255,255,0.12)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+              }}
+            >
+              <table className="w-full text-xs" style={{ minWidth: "500px" }}>
+                <thead>
+                  <tr
+                    style={{ background: "rgba(0,0,0,0.2)" }}
+                    className="text-gray-400"
+                  >
+                    <th className="p-2 text-center w-6">#</th>
+                    <th className="p-2 text-left">Equipo</th>
+                    <th className="p-2 text-center">PJ</th>
+                    <th className="p-2 text-center">PG</th>
+                    <th className="p-2 text-center">PE</th>
+                    <th className="p-2 text-center">PP</th>
+                    <th className="p-2 text-center">PTS</th>
+                    <th className="p-2 text-center">GF</th>
+                    <th className="p-2 text-center">GC</th>
+                    <th className="p-2 text-center">DG</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serie.posiciones.map((equipo, i) => (
+                    <tr
+                      key={equipo.id}
+                      style={{
+                        borderTop: "0.5px solid rgba(255,255,255,0.07)",
+                        background:
+                          i === 0 ? "rgba(52,211,153,0.1)" : "transparent",
+                      }}
+                      className={i === 0 ? "text-green-300" : "text-gray-300"}
+                    >
+                      <td
+                        className="p-2 text-center"
+                        style={{ color: "rgba(255,255,255,0.3)" }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <span>{i + 1}</span>
+                          <span className="text-xs">
+                            {getTendencia(i + 1, equipo.posicion_anterior)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
+                        <img
+                          src={equipo.escudo ?? "/escudos/generico.svg"}
+                          alt={equipo.nombre}
+                          width={20}
+                          height={20}
+                          className="object-contain flex-shrink-0"
+                        />
+                        {equipo.nombre}
+                      </td>
+                      <td className="p-2 text-center">{equipo.PJ}</td>
+                      <td className="p-2 text-center">{equipo.PG}</td>
+                      <td className="p-2 text-center">{equipo.PE}</td>
+                      <td className="p-2 text-center">{equipo.PP}</td>
+                      <td className="p-2 text-center">{equipo.PTS}</td>
+                      <td className="p-2 text-center">{equipo.GF}</td>
+                      <td className="p-2 text-center">{equipo.GC}</td>
+                      <td className="p-2 text-center">{equipo.DG}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          {index === 0 && <BannerInstagram />}
+        </React.Fragment>
+      ))}
+      <BannerInstagram />
+    </div>
+  );
+
+  const TablaResultados = ({
+    fechas,
+    porFecha,
+  }: {
+    fechas: string[];
+    porFecha: Record<string, Record<string, Partido[]>>;
+  }) => (
+    <div className="space-y-6">
+      {fechas.length === 0 && (
+        <p
+          className="text-center py-8"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
+          No hay resultados cargados aún.
+        </p>
+      )}
+      {fechas.map((fecha) => (
+        <div key={fecha}>
+          <div className="flex items-center gap-2 mb-3">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }}
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "rgba(255,255,255,0.45)" }}
+            >
+              {formatFecha(fecha)}
+            </span>
+          </div>
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.07)",
+              border: "0.5px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+            }}
+          >
+            {Object.entries(porFecha[fecha])
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([serie, partidos], si) => (
+                <div key={serie}>
+                  <div
+                    className="px-3 py-1.5 text-xs font-semibold"
+                    style={{
+                      color: "#4ade80",
+                      background: "rgba(52,211,153,0.1)",
+                      borderTop:
+                        si > 0 ? "0.5px solid rgba(255,255,255,0.08)" : "none",
+                    }}
+                  >
+                    {serie}
+                  </div>
+                  {partidos.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center px-2 sm:px-3 py-3 gap-1 sm:gap-2"
+                      style={{
+                        borderTop: "0.5px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <div className="flex-1 flex items-center justify-end gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
+                          {p.local?.nombre}
+                        </span>
+                        <img
+                          src={p.local?.escudo ?? "/escudos/generico.svg"}
+                          alt={p.local?.nombre}
+                          width={20}
+                          height={20}
+                          className="object-contain flex-shrink-0"
+                        />
+                      </div>
+                      <span
+                        className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
+                        style={{
+                          color: "#4ade80",
+                          background: "rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        {p.goles_local} - {p.goles_visitante}
+                      </span>
+                      <div className="flex-1 flex items-center justify-start gap-1">
+                        <img
+                          src={p.visitante?.escudo ?? "/escudos/generico.svg"}
+                          alt={p.visitante?.nombre}
+                          width={20}
+                          height={20}
+                          className="object-contain flex-shrink-0"
+                        />
+                        <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
+                          {p.visitante?.nombre}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 
   return (
@@ -217,277 +479,81 @@ export default function TabsClient({
             </h1>
           </div>
         </div>
-        <div className="text-right">
-          <p
-            className="text-xs font-semibold"
-            style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px" }}
-          >
-            Temporada 2026
-          </p>
-          <p
-            className="text-xs"
-            style={{ color: "rgba(255,255,255,0.35)", fontSize: "12.5px" }}
-          >
-            Liga Misionera del Sur
-          </p>
+        <div className="flex items-center gap-2">
+          <img
+            src="/lms.png"
+            alt="Liga Misionera del Sur"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+          <div className="text-right">
+            <p
+              className="text-xs font-semibold"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              Temporada 2026
+            </p>
+            <p
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}
+            >
+              Liga Misionera del Sur
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Banner encima de la tabla */}
-      <BannerInstagram />
 
       {/* Tabs */}
       <div
-        className="flex gap-1 mb-5"
+        className="flex gap-1 mb-5 flex-wrap"
         style={{ borderBottom: "0.5px solid rgba(255,255,255,0.12)" }}
       >
-        {(["posiciones", "resultados", "fixture"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className="flex-1 py-2 text-xs sm:text-sm rounded-t-lg font-medium transition-colors"
-            style={
-              tab === t
-                ? {
-                    background: "rgba(34,197,94,0.25)",
-                    color: "#4ade80",
-                    border: "0.5px solid rgba(34,197,94,0.4)",
-                  }
-                : {
-                    color: "rgba(255,255,255,0.35)",
-                    border: "0.5px solid transparent",
-                  }
-            }
-          >
-            {t === "posiciones"
-              ? "Posiciones"
-              : t === "resultados"
-                ? "Resultados"
-                : "Fixture"}
-          </button>
-        ))}
+        {(["posiciones", "resultados", "fixture", "fase1"] as const).map(
+          (t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="py-2 px-3 text-xs sm:text-sm rounded-t-lg font-medium transition-colors"
+              style={
+                tab === t
+                  ? {
+                      background: "rgba(34,197,94,0.25)",
+                      color: "#4ade80",
+                      border: "0.5px solid rgba(34,197,94,0.4)",
+                    }
+                  : {
+                      color: "rgba(255,255,255,0.35)",
+                      border: "0.5px solid transparent",
+                    }
+              }
+            >
+              {t === "posiciones"
+                ? "Posiciones"
+                : t === "resultados"
+                  ? "Resultados"
+                  : t === "fixture"
+                    ? "Fixture"
+                    : "Fase 1"}
+            </button>
+          ),
+        )}
       </div>
 
-      {/* Posiciones */}
+      {/* Posiciones fase 2 */}
       {tab === "posiciones" && (
         <div className="space-y-6">
-          {posiciones.map((serie, index) => (
-            <React.Fragment key={serie.id}>
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: "#4ade80" }}
-                  ></div>
-                  <h2
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.45)" }}
-                  >
-                    {serie.nombre}
-                  </h2>
-                </div>
-                <div
-                  className="rounded-xl overflow-x-auto"
-                  style={{
-                    background: "rgba(255,255,255,0.07)",
-                    border: "0.5px solid rgba(255,255,255,0.12)",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  <table
-                    className="w-full text-xs"
-                    style={{ minWidth: "500px" }}
-                  >
-                    <thead>
-                      <tr
-                        style={{ background: "rgba(0,0,0,0.2)" }}
-                        className="text-gray-400"
-                      >
-                        <th className="p-2 text-center w-6">#</th>
-                        <th className="p-2 text-left">Equipo</th>
-                        <th className="p-2 text-center">PJ</th>
-                        <th className="p-2 text-center">PG</th>
-                        <th className="p-2 text-center">PE</th>
-                        <th className="p-2 text-center">PP</th>
-                        <th className="p-2 text-center">PTS</th>
-                        <th className="p-2 text-center">GF</th>
-                        <th className="p-2 text-center">GC</th>
-                        <th className="p-2 text-center">DG</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {serie.posiciones.map((equipo, i) => (
-                        <tr
-                          key={equipo.id}
-                          style={{
-                            borderTop: "0.5px solid rgba(255,255,255,0.07)",
-                            background:
-                              i === 0 ? "rgba(52,211,153,0.1)" : "transparent",
-                          }}
-                          className={
-                            i === 0 ? "text-green-300" : "text-gray-300"
-                          }
-                        >
-                          <td
-                            className="p-2 text-center"
-                            style={{ color: "rgba(255,255,255,0.3)" }}
-                          >
-                            <div className="flex flex-col items-center">
-                              <span>{i + 1}</span>
-                              <span className="text-xs">
-                                {getTendencia(i + 1, equipo.posicion_anterior)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-2 font-medium truncate max-w-[100px] sm:max-w-none left-0 z-10 flex items-center gap-2">
-                            <img
-                              src={equipo.escudo ?? "/escudos/generico.svg"}
-                              alt={equipo.nombre}
-                              width={20}
-                              height={20}
-                              className="object-contain flex-shrink-0"
-                            />
-                            {equipo.nombre}
-                          </td>
-                          <td className="p-2 text-center">{equipo.PJ}</td>
-                          <td className="p-2 text-center">{equipo.PG}</td>
-                          <td className="p-2 text-center">{equipo.PE}</td>
-                          <td className="p-2 text-center">{equipo.PP}</td>
-                          <td className="p-2 text-center">{equipo.PTS}</td>
-                          <td className="p-2 text-center">{equipo.GF}</td>
-                          <td className="p-2 text-center">{equipo.GC}</td>
-                          <td className="p-2 text-center">{equipo.DG}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              {/* Banner entre Serie A y B */}
-              {index === 0 && <BannerInstagram />}
-            </React.Fragment>
-          ))}
-
-          {/* Banner debajo de Serie C */}
           <BannerInstagram />
+          <TablaPostiones series={posiciones} />
         </div>
       )}
 
-      {/* Resultados */}
+      {/* Resultados fase 2 */}
       {tab === "resultados" && (
-        <div className="space-y-6">
-          {fechas.length === 0 && (
-            <p
-              className="text-center py-8"
-              style={{ color: "rgba(255,255,255,0.3)" }}
-            >
-              No hay resultados cargados aún.
-            </p>
-          )}
-          {fechas.map((fecha) => (
-            <div key={fecha}>
-              <div className="flex items-center gap-2 mb-3">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }}
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <span
-                  className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: "rgba(255,255,255,0.45)" }}
-                >
-                  {formatFecha(fecha)}
-                </span>
-              </div>
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "0.5px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
-                }}
-              >
-                {Object.entries(porFecha[fecha])
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([serie, partidos], si) => (
-                    <div key={serie}>
-                      <div
-                        className="px-3 py-1.5 text-xs font-semibold"
-                        style={{
-                          color: "#4ade80",
-                          background: "rgba(52,211,153,0.1)",
-                          borderTop:
-                            si > 0
-                              ? "0.5px solid rgba(255,255,255,0.08)"
-                              : "none",
-                        }}
-                      >
-                        {serie}
-                      </div>
-                      {partidos.map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex items-center px-2 sm:px-3 py-3 gap-1 sm:gap-2"
-                          style={{
-                            borderTop: "0.5px solid rgba(255,255,255,0.06)",
-                          }}
-                        >
-                          <div className="flex-1 flex items-center justify-end gap-1">
-                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
-                              {p.local?.nombre}
-                            </span>
-                            <img
-                              src={p.local?.escudo ?? "/escudos/generico.svg"}
-                              alt={p.local?.nombre}
-                              width={20}
-                              height={20}
-                              className="object-contain flex-shrink-0"
-                            />
-                          </div>
-                          <span
-                            className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
-                            style={{
-                              color: "#4ade80",
-                              background: "rgba(0,0,0,0.2)",
-                            }}
-                          >
-                            {p.goles_local} - {p.goles_visitante}
-                          </span>
-                          <div className="flex-1 flex items-center justify-start gap-1">
-                            <img
-                              src={
-                                p.visitante?.escudo ?? "/escudos/generico.svg"
-                              }
-                              alt={p.visitante?.nombre}
-                              width={20}
-                              height={20}
-                              className="object-contain flex-shrink-0"
-                            />
-                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                              {p.visitante?.nombre}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TablaResultados fechas={fechas} porFecha={porFecha} />
       )}
 
-      {/* Fixture */}
+      {/* Fixture fase 2 */}
       {tab === "fixture" && (
         <div className="space-y-6">
           {fechasFixture.length === 0 && (
@@ -597,6 +663,42 @@ export default function TabsClient({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Fase 1 */}
+      {tab === "fase1" && (
+        <div className="space-y-6">
+          <div
+            className="rounded-xl px-4 py-3"
+            style={{
+              background: "rgba(255,165,0,0.08)",
+              border: "0.5px solid rgba(255,165,0,0.2)",
+            }}
+          >
+            <p
+              className="text-xs font-semibold"
+              style={{ color: "rgba(255,165,0,0.8)" }}
+            >
+              📋 Fase 1 — Fase de grupos
+            </p>
+            <p
+              className="text-xs mt-1"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              Resultados y posiciones de la primera fase del torneo.
+            </p>
+          </div>
+          <TablaPostiones series={posicionesFase1} />
+          <div className="mt-6">
+            <h3
+              className="text-xs font-semibold uppercase tracking-widest mb-4"
+              style={{ color: "rgba(255,255,255,0.45)" }}
+            >
+              Resultados Fase 1
+            </h3>
+            <TablaResultados fechas={fechasFase1} porFecha={porFechaFase1} />
+          </div>
         </div>
       )}
 

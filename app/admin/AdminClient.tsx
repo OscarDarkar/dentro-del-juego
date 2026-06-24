@@ -60,6 +60,7 @@ export default function AdminClient() {
       goles_visitante: jugado ? golesVisitante : null,
       fecha,
       jugado,
+      fase: 2,
     });
 
     if (error) {
