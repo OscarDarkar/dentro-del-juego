@@ -15,6 +15,8 @@ type Partido = {
   goles_local: number | null;
   goles_visitante: number | null;
   jugado: boolean;
+  jornada: number | null;
+  fase: number | null;
   local: { nombre: string };
   visitante: { nombre: string };
   serie: { nombre: string };
@@ -27,27 +29,36 @@ export default function PartidosClient() {
   const [golesVisitante, setGolesVisitante] = useState(0);
   const [fecha, setFecha] = useState("");
   const [jugado, setJugado] = useState(true);
+  const [jornada, setJornada] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState("");
+  const [filtroFase, setFiltroFase] = useState<number | "all">("all");
 
   async function cargarPartidos() {
-    const { data } = await supabase
+    let query = supabase
       .from("partidos")
       .select(
         `
-        id, fecha, goles_local, goles_visitante, jugado,
+        id, fecha, goles_local, goles_visitante, jugado, jornada, fase,
         local:local_id(nombre),
         visitante:visitante_id(nombre),
         serie:serie_id(nombre)
       `,
       )
+      .order("fase", { ascending: false })
+      .order("jornada", { ascending: false })
       .order("fecha", { ascending: false });
 
+    if (filtroFase !== "all") {
+      query = query.eq("fase", filtroFase);
+    }
+
+    const { data } = await query;
     if (data) setPartidos(data as unknown as Partido[]);
   }
 
   useEffect(() => {
     cargarPartidos();
-  }, []);
+  }, [filtroFase]);
 
   async function eliminar(id: number) {
     if (!confirm("¿Seguro que querés eliminar este partido?")) return;
@@ -64,6 +75,7 @@ export default function PartidosClient() {
         goles_visitante: jugado ? golesVisitante : null,
         fecha,
         jugado,
+        jornada,
       })
       .eq("id", Number(id))
       .select();
@@ -83,6 +95,7 @@ export default function PartidosClient() {
     setGolesVisitante(p.goles_visitante ?? 0);
     setFecha(p.fecha);
     setJugado(p.jugado);
+    setJornada(p.jornada ?? null);
   }
 
   return (
@@ -106,6 +119,23 @@ export default function PartidosClient() {
         </div>
       </div>
 
+      {/* Filtro de fase */}
+      <div className="flex gap-2 mb-4">
+        {(["all", 1, 2] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFiltroFase(f)}
+            className={`px-3 py-1 rounded text-xs font-bold ${
+              filtroFase === f
+                ? "bg-green-700 text-white"
+                : "bg-gray-700 text-gray-300"
+            }`}
+          >
+            {f === "all" ? "Todos" : `Fase ${f}`}
+          </button>
+        ))}
+      </div>
+
       {mensaje && (
         <p className="text-center text-sm text-yellow-300 mb-4">{mensaje}</p>
       )}
@@ -117,9 +147,21 @@ export default function PartidosClient() {
         {partidos.map((p) => (
           <div key={p.id} className="bg-gray-800 p-3 sm:p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-green-400 text-xs sm:text-sm font-semibold">
-                {p.serie?.nombre}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-green-400 text-xs sm:text-sm font-semibold">
+                  {p.serie?.nombre}
+                </span>
+                {p.fase && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-900 text-blue-400">
+                    Fase {p.fase}
+                  </span>
+                )}
+                {p.jornada && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-400">
+                    J{p.jornada}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 text-xs">
                   {formatFecha(p.fecha)}
@@ -170,17 +212,26 @@ export default function PartidosClient() {
                       className="w-full mt-1 bg-gray-700 text-white rounded p-1.5 text-xs sm:text-sm"
                     />
                   </div>
-                  <div className="flex items-end pb-1.5">
-                    <div className="flex items-center gap-2">
-                      <label className="text-gray-400 text-xs">¿Jugado?</label>
-                      <input
-                        type="checkbox"
-                        checked={jugado}
-                        onChange={(e) => setJugado(e.target.checked)}
-                        className="w-4 h-4 accent-green-600"
-                      />
-                    </div>
+                  <div>
+                    <label className="text-gray-400 text-xs">Jornada</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={jornada ?? ""}
+                      onChange={(e) => setJornada(Number(e.target.value))}
+                      className="w-full mt-1 bg-gray-700 text-white rounded p-1.5 text-xs sm:text-sm"
+                    />
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-gray-400 text-xs">¿Jugado?</label>
+                  <input
+                    type="checkbox"
+                    checked={jugado}
+                    onChange={(e) => setJugado(e.target.checked)}
+                    className="w-4 h-4 accent-green-600"
+                  />
                 </div>
 
                 <div className="flex gap-2">

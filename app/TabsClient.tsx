@@ -20,6 +20,7 @@ type Equipo = {
 type Partido = {
   id: number;
   fecha: string;
+  jornada: number | null;
   goles_local: number | null;
   goles_visitante: number | null;
   local: { nombre: string; escudo: string | null };
@@ -27,24 +28,29 @@ type Partido = {
   serie: { nombre: string };
 };
 
+type JornadaData = {
+  fecha: string;
+  series: Record<string, Partido[]>;
+};
+
 export default function TabsClient({
   posiciones,
-  fechas,
-  porFecha,
-  fechasFixture,
-  porFechaFixture,
+  jornadas,
+  porJornada,
+  jornadasFixture,
+  porJornadaFixture,
   posicionesFase1,
-  fechasFase1,
-  porFechaFase1,
+  jornadasFase1,
+  porJornadaFase1,
 }: {
   posiciones: { id: number; nombre: string; posiciones: Equipo[] }[];
-  fechas: string[];
-  porFecha: Record<string, Record<string, Partido[]>>;
-  fechasFixture: string[];
-  porFechaFixture: Record<string, Record<string, Partido[]>>;
+  jornadas: string[];
+  porJornada: Record<string, JornadaData>;
+  jornadasFixture: string[];
+  porJornadaFixture: Record<string, JornadaData>;
   posicionesFase1: { id: number; nombre: string; posiciones: Equipo[] }[];
-  fechasFase1: string[];
-  porFechaFase1: Record<string, Record<string, Partido[]>>;
+  jornadasFase1: string[];
+  porJornadaFase1: Record<string, JornadaData>;
 }) {
   const [tab, setTab] = useState<
     "posiciones" | "resultados" | "fixture" | "fase1"
@@ -75,9 +81,7 @@ export default function TabsClient({
     const texto = posiciones
       .map((e, i) => `${i + 1}. ${e.nombre} - ${e.PTS} pts`)
       .join("\n");
-
     const mensaje = `⚽ *${serieNombre} - Liga Misionera Del Sur*\n\n${texto}\n\n📱 Seguí la LMS en:\nhttps://dentro-del-juego-five.vercel.app`;
-
     if (navigator.share) {
       await navigator.share({ text: mensaje });
     } else {
@@ -164,7 +168,7 @@ export default function TabsClient({
     </a>
   );
 
-  const TablaPostiones = ({
+  const TablaPosiciones = ({
     series,
   }: {
     series: { id: number; nombre: string; posiciones: Equipo[] }[];
@@ -292,14 +296,14 @@ export default function TabsClient({
   );
 
   const TablaResultados = ({
-    fechas,
-    porFecha,
+    jornadas,
+    porJornada,
   }: {
-    fechas: string[];
-    porFecha: Record<string, Record<string, Partido[]>>;
+    jornadas: string[];
+    porJornada: Record<string, JornadaData>;
   }) => (
     <div className="space-y-6">
-      {fechas.length === 0 && (
+      {jornadas.length === 0 && (
         <p
           className="text-center py-8"
           style={{ color: "rgba(255,255,255,0.3)" }}
@@ -307,28 +311,19 @@ export default function TabsClient({
           No hay resultados cargados aún.
         </p>
       )}
-      {fechas.map((fecha) => (
-        <div key={fecha}>
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }}
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
+      {jornadas.map((jornada) => (
+        <div key={jornada}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold" style={{ color: "#4ade80" }}>
+                Fecha {jornada}
+              </span>
+            </div>
             <span
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.45)" }}
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.4)" }}
             >
-              {formatFecha(fecha)}
+              {formatFecha(porJornada[jornada].fecha)}
             </span>
           </div>
           <div
@@ -339,7 +334,7 @@ export default function TabsClient({
               boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
             }}
           >
-            {Object.entries(porFecha[fecha])
+            {Object.entries(porJornada[jornada].series)
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([serie, partidos], si) => (
                 <div key={serie}>
@@ -382,6 +377,109 @@ export default function TabsClient({
                         }}
                       >
                         {p.goles_local} - {p.goles_visitante}
+                      </span>
+                      <div className="flex-1 flex items-center justify-start gap-1">
+                        <img
+                          src={p.visitante?.escudo ?? "/escudos/generico.svg"}
+                          alt={p.visitante?.nombre}
+                          width={20}
+                          height={20}
+                          className="object-contain flex-shrink-0"
+                        />
+                        <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
+                          {p.visitante?.nombre}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const TablaFixture = ({
+    jornadas,
+    porJornada,
+  }: {
+    jornadas: string[];
+    porJornada: Record<string, JornadaData>;
+  }) => (
+    <div className="space-y-6">
+      {jornadas.length === 0 && (
+        <p
+          className="text-center py-8"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
+          No hay partidos programados.
+        </p>
+      )}
+      {jornadas.map((jornada) => (
+        <div key={jornada}>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-bold" style={{ color: "#4ade80" }}>
+              Fecha {jornada}
+            </span>
+            <span
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              {formatFecha(porJornada[jornada].fecha)}
+            </span>
+          </div>
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.07)",
+              border: "0.5px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+            }}
+          >
+            {Object.entries(porJornada[jornada].series)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([serie, partidos], si) => (
+                <div key={serie}>
+                  <div
+                    className="px-3 py-1.5 text-xs font-semibold"
+                    style={{
+                      color: "#4ade80",
+                      background: "rgba(52,211,153,0.1)",
+                      borderTop:
+                        si > 0 ? "0.5px solid rgba(255,255,255,0.08)" : "none",
+                    }}
+                  >
+                    {serie}
+                  </div>
+                  {partidos.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center px-2 sm:px-3 py-3 gap-1 sm:gap-2"
+                      style={{
+                        borderTop: "0.5px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <div className="flex-1 flex items-center justify-end gap-1">
+                        <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
+                          {p.local?.nombre}
+                        </span>
+                        <img
+                          src={p.local?.escudo ?? "/escudos/generico.svg"}
+                          alt={p.local?.nombre}
+                          width={20}
+                          height={20}
+                          className="object-contain flex-shrink-0"
+                        />
+                      </div>
+                      <span
+                        className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
+                        style={{
+                          color: "rgba(255,255,255,0.3)",
+                          background: "rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        vs
                       </span>
                       <div className="flex-1 flex items-center justify-start gap-1">
                         <img
@@ -544,126 +642,21 @@ export default function TabsClient({
       {tab === "posiciones" && (
         <div className="space-y-6">
           <BannerInstagram />
-          <TablaPostiones series={posiciones} />
+          <TablaPosiciones series={posiciones} />
         </div>
       )}
 
       {/* Resultados fase 2 */}
       {tab === "resultados" && (
-        <TablaResultados fechas={fechas} porFecha={porFecha} />
+        <TablaResultados jornadas={jornadas} porJornada={porJornada} />
       )}
 
       {/* Fixture fase 2 */}
       {tab === "fixture" && (
-        <div className="space-y-6">
-          {fechasFixture.length === 0 && (
-            <p
-              className="text-center py-8"
-              style={{ color: "rgba(255,255,255,0.3)" }}
-            >
-              No hay partidos programados.
-            </p>
-          )}
-          {fechasFixture.map((fecha) => (
-            <div key={fecha}>
-              <div className="flex items-center gap-2 mb-3">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ color: "rgba(255,255,255,0.4)", flexShrink: 0 }}
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <span
-                  className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: "rgba(255,255,255,0.45)" }}
-                >
-                  {formatFecha(fecha)}
-                </span>
-              </div>
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "0.5px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
-                }}
-              >
-                {Object.entries(porFechaFixture[fecha])
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([serie, partidos], si) => (
-                    <div key={serie}>
-                      <div
-                        className="px-3 py-1.5 text-xs font-semibold"
-                        style={{
-                          color: "#4ade80",
-                          background: "rgba(52,211,153,0.1)",
-                          borderTop:
-                            si > 0
-                              ? "0.5px solid rgba(255,255,255,0.08)"
-                              : "none",
-                        }}
-                      >
-                        {serie}
-                      </div>
-                      {partidos.map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex items-center px-2 sm:px-3 py-3 gap-1 sm:gap-2"
-                          style={{
-                            borderTop: "0.5px solid rgba(255,255,255,0.06)",
-                          }}
-                        >
-                          <div className="flex-1 flex items-center justify-end gap-1">
-                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight text-right">
-                              {p.local?.nombre}
-                            </span>
-                            <img
-                              src={p.local?.escudo ?? "/escudos/generico.svg"}
-                              alt={p.local?.nombre}
-                              width={20}
-                              height={20}
-                              className="object-contain flex-shrink-0"
-                            />
-                          </div>
-                          <span
-                            className="font-bold text-sm sm:text-base min-w-[48px] text-center rounded-lg px-1.5 py-0.5 flex-shrink-0"
-                            style={{
-                              color: "rgba(255,255,255,0.3)",
-                              background: "rgba(0,0,0,0.2)",
-                            }}
-                          >
-                            vs
-                          </span>
-                          <div className="flex-1 flex items-center justify-start gap-1">
-                            <img
-                              src={
-                                p.visitante?.escudo ?? "/escudos/generico.svg"
-                              }
-                              alt={p.visitante?.nombre}
-                              width={20}
-                              height={20}
-                              className="object-contain flex-shrink-0"
-                            />
-                            <span className="text-xs sm:text-sm font-medium text-gray-200 leading-tight">
-                              {p.visitante?.nombre}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TablaFixture
+          jornadas={jornadasFixture}
+          porJornada={porJornadaFixture}
+        />
       )}
 
       {/* Fase 1 */}
@@ -689,7 +682,7 @@ export default function TabsClient({
               Resultados y posiciones de la primera fase del torneo.
             </p>
           </div>
-          <TablaPostiones series={posicionesFase1} />
+          <TablaPosiciones series={posicionesFase1} />
           <div className="mt-6">
             <h3
               className="text-xs font-semibold uppercase tracking-widest mb-4"
@@ -697,7 +690,10 @@ export default function TabsClient({
             >
               Resultados Fase 1
             </h3>
-            <TablaResultados fechas={fechasFase1} porFecha={porFechaFase1} />
+            <TablaResultados
+              jornadas={jornadasFase1}
+              porJornada={porJornadaFase1}
+            />
           </div>
         </div>
       )}

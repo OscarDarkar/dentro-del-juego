@@ -20,6 +20,7 @@ type Equipo = {
 type Partido = {
   id: number;
   fecha: string;
+  jornada: number | null;
   goles_local: number | null;
   goles_visitante: number | null;
   local: { nombre: string; escudo: string | null };
@@ -27,7 +28,11 @@ type Partido = {
   serie: { nombre: string };
 };
 
-// Posiciones para fase 1 (usa serie_id en equipos)
+type JornadaData = {
+  fecha: string;
+  series: Record<string, Partido[]>;
+};
+
 async function getPosicionesFase1(serieId: number): Promise<Equipo[]> {
   const { data: equipos } = await supabase
     .from("equipos")
@@ -93,7 +98,6 @@ async function getPosicionesFase1(serieId: number): Promise<Equipo[]> {
     .sort((a, b) => b.PTS - a.PTS || b.DG - a.DG);
 }
 
-// Posiciones para fase 2 (usa equipos_series)
 async function getPosicionesFase2(serieId: number): Promise<Equipo[]> {
   const { data: equiposSeries } = await supabase
     .from("equipos_series")
@@ -161,8 +165,48 @@ async function getPosicionesFase2(serieId: number): Promise<Equipo[]> {
     .sort((a, b) => b.PTS - a.PTS || b.DG - a.DG);
 }
 
+function agruparPorJornada(partidos: Partido[]): {
+  jornadas: string[];
+  porJornada: Record<string, JornadaData>;
+} {
+  const porJornada: Record<string, JornadaData> = {};
+
+  for (const p of partidos) {
+    const key = String(p.jornada ?? 0);
+    const serie = p.serie?.nombre ?? "Sin serie";
+    if (!porJornada[key]) porJornada[key] = { fecha: p.fecha, series: {} };
+    if (!porJornada[key].series[serie]) porJornada[key].series[serie] = [];
+    porJornada[key].series[serie].push(p);
+  }
+
+  const jornadas = Object.keys(porJornada).sort(
+    (a, b) => Number(b) - Number(a),
+  );
+  return { jornadas, porJornada };
+}
+
+function agruparFixturePorJornada(partidos: Partido[]): {
+  jornadas: string[];
+  porJornada: Record<string, JornadaData>;
+} {
+  const porJornada: Record<string, JornadaData> = {};
+
+  for (const p of partidos) {
+    const key = String(p.jornada ?? 0);
+    const serie = p.serie?.nombre ?? "Sin serie";
+    if (!porJornada[key]) porJornada[key] = { fecha: p.fecha, series: {} };
+    if (!porJornada[key].series[serie]) porJornada[key].series[serie] = [];
+    porJornada[key].series[serie].push(p);
+  }
+
+  const jornadas = Object.keys(porJornada).sort(
+    (a, b) => Number(a) - Number(b),
+  );
+  return { jornadas, porJornada };
+}
+
 export default async function Home() {
-  // Series fase 2 (actuales)
+  // Series fase 2
   const { data: seriesFase2 } = await supabase
     .from("series")
     .select("id, nombre, fase")
@@ -176,7 +220,7 @@ export default async function Home() {
     })),
   );
 
-  // Series fase 1 (historial)
+  // Series fase 1
   const { data: seriesFase1 } = await supabase
     .from("series")
     .select("id, nombre, fase")
@@ -195,7 +239,7 @@ export default async function Home() {
     .from("partidos")
     .select(
       `
-      id, fecha, goles_local, goles_visitante,
+      id, fecha, jornada, goles_local, goles_visitante,
       local:local_id(nombre, escudo),
       visitante:visitante_id(nombre, escudo),
       serie:serie_id(nombre)
@@ -203,18 +247,11 @@ export default async function Home() {
     )
     .eq("jugado", true)
     .eq("fase", 2)
+    .order("jornada", { ascending: false })
     .order("fecha", { ascending: false });
 
-  const porFecha: Record<string, Record<string, Partido[]>> = {};
-  for (const p of (resultados as unknown as Partido[]) ?? []) {
-    const fecha = p.fecha;
-    const serie = p.serie?.nombre ?? "Sin serie";
-    if (!porFecha[fecha]) porFecha[fecha] = {};
-    if (!porFecha[fecha][serie]) porFecha[fecha][serie] = [];
-    porFecha[fecha][serie].push(p);
-  }
-  const fechas = Object.keys(porFecha).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+  const { jornadas, porJornada } = agruparPorJornada(
+    (resultados as unknown as Partido[]) ?? [],
   );
 
   // Fixture fase 2
@@ -222,7 +259,7 @@ export default async function Home() {
     .from("partidos")
     .select(
       `
-      id, fecha, goles_local, goles_visitante,
+      id, fecha, jornada, goles_local, goles_visitante,
       local:local_id(nombre, escudo),
       visitante:visitante_id(nombre, escudo),
       serie:serie_id(nombre)
@@ -230,26 +267,18 @@ export default async function Home() {
     )
     .eq("jugado", false)
     .eq("fase", 2)
+    .order("jornada", { ascending: true })
     .order("fecha", { ascending: true });
 
-  const porFechaFixture: Record<string, Record<string, Partido[]>> = {};
-  for (const p of (fixture as unknown as Partido[]) ?? []) {
-    const fecha = p.fecha;
-    const serie = p.serie?.nombre ?? "Sin serie";
-    if (!porFechaFixture[fecha]) porFechaFixture[fecha] = {};
-    if (!porFechaFixture[fecha][serie]) porFechaFixture[fecha][serie] = [];
-    porFechaFixture[fecha][serie].push(p);
-  }
-  const fechasFixture = Object.keys(porFechaFixture).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-  );
+  const { jornadas: jornadasFixture, porJornada: porJornadaFixture } =
+    agruparFixturePorJornada((fixture as unknown as Partido[]) ?? []);
 
   // Resultados fase 1
   const { data: resultadosFase1 } = await supabase
     .from("partidos")
     .select(
       `
-      id, fecha, goles_local, goles_visitante,
+      id, fecha, jornada, goles_local, goles_visitante,
       local:local_id(nombre, escudo),
       visitante:visitante_id(nombre, escudo),
       serie:serie_id(nombre)
@@ -257,31 +286,23 @@ export default async function Home() {
     )
     .eq("jugado", true)
     .eq("fase", 1)
+    .order("jornada", { ascending: false })
     .order("fecha", { ascending: false });
 
-  const porFechaFase1: Record<string, Record<string, Partido[]>> = {};
-  for (const p of (resultadosFase1 as unknown as Partido[]) ?? []) {
-    const fecha = p.fecha;
-    const serie = p.serie?.nombre ?? "Sin serie";
-    if (!porFechaFase1[fecha]) porFechaFase1[fecha] = {};
-    if (!porFechaFase1[fecha][serie]) porFechaFase1[fecha][serie] = [];
-    porFechaFase1[fecha][serie].push(p);
-  }
-  const fechasFase1 = Object.keys(porFechaFase1).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
-  );
+  const { jornadas: jornadasFase1, porJornada: porJornadaFase1 } =
+    agruparPorJornada((resultadosFase1 as unknown as Partido[]) ?? []);
 
   return (
     <main className="p-6">
       <TabsClient
         posiciones={seriesConPosicionesFase2}
-        fechas={fechas}
-        porFecha={porFecha}
-        fechasFixture={fechasFixture}
-        porFechaFixture={porFechaFixture}
+        jornadas={jornadas}
+        porJornada={porJornada}
+        jornadasFixture={jornadasFixture}
+        porJornadaFixture={porJornadaFixture}
         posicionesFase1={seriesConPosicionesFase1}
-        fechasFase1={fechasFase1}
-        porFechaFase1={porFechaFase1}
+        jornadasFase1={jornadasFase1}
+        porJornadaFase1={porJornadaFase1}
       />
     </main>
   );

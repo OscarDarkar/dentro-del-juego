@@ -9,38 +9,59 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
-type Serie = { id: number; nombre: string };
+type Serie = { id: number; nombre: string; fase: number };
 type Equipo = { id: number; nombre: string; serie_id: number };
 
 export default function AdminClient() {
   const [series, setSeries] = useState<Serie[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [serieId, setSerieId] = useState<number | null>(null);
+  const [serieFase, setSerieFase] = useState<number>(1);
   const [localId, setLocalId] = useState<number | null>(null);
   const [visitanteId, setVisitanteId] = useState<number | null>(null);
   const [golesLocal, setGolesLocal] = useState(0);
   const [golesVisitante, setGolesVisitante] = useState(0);
   const [fecha, setFecha] = useState("");
   const [jugado, setJugado] = useState(true);
+  const [jornada, setJornada] = useState(1);
   const [mensaje, setMensaje] = useState("");
 
   useEffect(() => {
     supabase
       .from("series")
-      .select("*")
+      .select("id, nombre, fase")
+      .order("fase")
       .order("nombre")
       .then(({ data }) => {
         if (data) setSeries(data);
       });
-    supabase
-      .from("equipos")
-      .select("*")
-      .then(({ data }) => {
-        if (data) setEquipos(data);
-      });
   }, []);
 
-  const equiposFiltrados = equipos.filter((e) => e.serie_id === serieId);
+  async function cargarEquipos(serieId: number, fase: number) {
+    if (fase === 2) {
+      // Para fase 2 cargar desde equipos_series
+      const { data } = await supabase
+        .from("equipos_series")
+        .select("equipo_id, equipos(id, nombre)")
+        .eq("serie_id", serieId);
+
+      if (data) {
+        const equiposMapeados = data.map((es: any) => ({
+          id: es.equipos.id,
+          nombre: es.equipos.nombre,
+          serie_id: serieId,
+        }));
+        setEquipos(equiposMapeados);
+      }
+    } else {
+      // Para fase 1 cargar desde equipos
+      const { data } = await supabase
+        .from("equipos")
+        .select("id, nombre, serie_id")
+        .eq("serie_id", serieId);
+      if (data) setEquipos(data);
+    }
+  }
 
   async function cargarResultado() {
     if (!serieId || !localId || !visitanteId || !fecha) {
@@ -60,7 +81,8 @@ export default function AdminClient() {
       goles_visitante: jugado ? golesVisitante : null,
       fecha,
       jugado,
-      fase: 2,
+      fase: serieFase,
+      jornada,
     });
 
     if (error) {
@@ -73,6 +95,7 @@ export default function AdminClient() {
       setGolesVisitante(0);
       setFecha("");
       setJugado(true);
+      setJornada(1);
     }
   }
 
@@ -106,16 +129,26 @@ export default function AdminClient() {
             className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm"
             value={serieId ?? ""}
             onChange={(e) => {
-              setSerieId(Number(e.target.value));
+              const id = Number(e.target.value);
+              const serie = series.find((s) => s.id === id);
+              setSerieId(id);
+              setSerieFase(serie?.fase ?? 1);
               setLocalId(null);
               setVisitanteId(null);
+              if (id && serie) cargarEquipos(id, serie.fase);
             }}
           >
             <option value="">Seleccioná una serie</option>
-            {series.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nombre}
-              </option>
+            {[1, 2].map((fase) => (
+              <optgroup key={fase} label={`Fase ${fase}`}>
+                {series
+                  .filter((s) => s.fase === fase)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -129,7 +162,7 @@ export default function AdminClient() {
             disabled={!serieId}
           >
             <option value="">Seleccioná el local</option>
-            {equiposFiltrados.map((e) => (
+            {equipos.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.nombre}
               </option>
@@ -146,7 +179,7 @@ export default function AdminClient() {
             disabled={!serieId}
           >
             <option value="">Seleccioná el visitante</option>
-            {equiposFiltrados.map((e) => (
+            {equipos.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.nombre}
               </option>
@@ -195,6 +228,17 @@ export default function AdminClient() {
             type="date"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
+            className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-gray-300 text-sm">Jornada</label>
+          <input
+            type="number"
+            min={1}
+            value={jornada}
+            onChange={(e) => setJornada(Number(e.target.value))}
             className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm"
           />
         </div>
