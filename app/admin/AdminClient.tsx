@@ -119,6 +119,12 @@ export default function AdminClient() {
           >
             Cerrar sesión
           </button>
+          <Link
+            href="/admin/final"
+            className="bg-yellow-700 hover:bg-yellow-600 text-white text-xs sm:text-sm font-bold px-3 py-2 rounded"
+          >
+            Fase Final
+          </Link>
         </div>
       </div>
 

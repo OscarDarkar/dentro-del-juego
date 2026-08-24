@@ -34,6 +34,7 @@ type JornadaData = {
 };
 
 export default function TabsClient({
+  bracket,
   posiciones,
   jornadas,
   porJornada,
@@ -42,7 +43,11 @@ export default function TabsClient({
   posicionesFase1,
   jornadasFase1,
   porJornadaFase1,
+  posicionesFase2,
+  jornadasFase2,
+  porJornadaFase2,
 }: {
+  bracket: React.ReactNode;
   posiciones: { id: number; nombre: string; posiciones: Equipo[] }[];
   jornadas: string[];
   porJornada: Record<string, JornadaData>;
@@ -51,9 +56,12 @@ export default function TabsClient({
   posicionesFase1: { id: number; nombre: string; posiciones: Equipo[] }[];
   jornadasFase1: string[];
   porJornadaFase1: Record<string, JornadaData>;
+  posicionesFase2: { id: number; nombre: string; posiciones: Equipo[] }[];
+  jornadasFase2: string[];
+  porJornadaFase2: Record<string, JornadaData>;
 }) {
   const [tab, setTab] = useState<
-    "posiciones" | "resultados" | "fixture" | "fase1"
+    "posiciones" | "resultados" | "fixture" | "fase2" | "fase1"
   >("posiciones");
 
   function formatFecha(fecha: string) {
@@ -314,11 +322,9 @@ export default function TabsClient({
       {jornadas.map((jornada) => (
         <div key={jornada}>
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold" style={{ color: "#4ade80" }}>
-                Fecha {jornada}
-              </span>
-            </div>
+            <span className="text-sm font-bold" style={{ color: "#4ade80" }}>
+              Fecha {jornada}
+            </span>
             <span
               className="text-xs"
               style={{ color: "rgba(255,255,255,0.4)" }}
@@ -602,43 +608,48 @@ export default function TabsClient({
         </div>
       </div>
 
+      {/* Bracket fase final */}
+      {bracket}
+
       {/* Tabs */}
       <div
         className="flex gap-1 mb-5 flex-wrap"
         style={{ borderBottom: "0.5px solid rgba(255,255,255,0.12)" }}
       >
-        {(["posiciones", "resultados", "fixture", "fase1"] as const).map(
-          (t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className="py-2 px-3 text-xs sm:text-sm rounded-t-lg font-medium transition-colors"
-              style={
-                tab === t
-                  ? {
-                      background: "rgba(34,197,94,0.25)",
-                      color: "#4ade80",
-                      border: "0.5px solid rgba(34,197,94,0.4)",
-                    }
-                  : {
-                      color: "rgba(255,255,255,0.35)",
-                      border: "0.5px solid transparent",
-                    }
-              }
-            >
-              {t === "posiciones"
-                ? "Posiciones"
-                : t === "resultados"
-                  ? "Resultados"
-                  : t === "fixture"
-                    ? "Fixture"
+        {(
+          ["posiciones", "resultados", "fixture", "fase2", "fase1"] as const
+        ).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className="py-2 px-3 text-xs sm:text-sm rounded-t-lg font-medium transition-colors"
+            style={
+              tab === t
+                ? {
+                    background: "rgba(34,197,94,0.25)",
+                    color: "#4ade80",
+                    border: "0.5px solid rgba(34,197,94,0.4)",
+                  }
+                : {
+                    color: "rgba(255,255,255,0.35)",
+                    border: "0.5px solid transparent",
+                  }
+            }
+          >
+            {t === "posiciones"
+              ? "Posiciones"
+              : t === "resultados"
+                ? "Resultados"
+                : t === "fixture"
+                  ? "Fixture"
+                  : t === "fase2"
+                    ? "Fase 2"
                     : "Fase 1"}
-            </button>
-          ),
-        )}
+          </button>
+        ))}
       </div>
 
-      {/* Posiciones fase 2 */}
+      {/* Posiciones fase final */}
       {tab === "posiciones" && (
         <div className="space-y-6">
           <BannerInstagram />
@@ -646,17 +657,56 @@ export default function TabsClient({
         </div>
       )}
 
-      {/* Resultados fase 2 */}
+      {/* Resultados fase final */}
       {tab === "resultados" && (
         <TablaResultados jornadas={jornadas} porJornada={porJornada} />
       )}
 
-      {/* Fixture fase 2 */}
+      {/* Fixture fase final */}
       {tab === "fixture" && (
         <TablaFixture
           jornadas={jornadasFixture}
           porJornada={porJornadaFixture}
         />
+      )}
+
+      {/* Fase 2 */}
+      {tab === "fase2" && (
+        <div className="space-y-6">
+          <div
+            className="rounded-xl px-4 py-3"
+            style={{
+              background: "rgba(34,197,94,0.08)",
+              border: "0.5px solid rgba(34,197,94,0.2)",
+            }}
+          >
+            <p
+              className="text-xs font-semibold"
+              style={{ color: "rgba(34,197,94,0.8)" }}
+            >
+              📋 Fase 2 — Fase de clasificación
+            </p>
+            <p
+              className="text-xs mt-1"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              Resultados y posiciones de la segunda fase del torneo.
+            </p>
+          </div>
+          <TablaPosiciones series={posicionesFase2} />
+          <div className="mt-6">
+            <h3
+              className="text-xs font-semibold uppercase tracking-widest mb-4"
+              style={{ color: "rgba(255,255,255,0.45)" }}
+            >
+              Resultados Fase 2
+            </h3>
+            <TablaResultados
+              jornadas={jornadasFase2}
+              porJornada={porJornadaFase2}
+            />
+          </div>
+        </div>
       )}
 
       {/* Fase 1 */}
