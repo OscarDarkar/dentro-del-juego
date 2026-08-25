@@ -15,390 +15,217 @@ type PartidoFinal = {
   equipo_visitante: { nombre: string; escudo: string | null } | null;
 };
 
-export default function BracketFinal({
+function formatFecha(fecha: string) {
+  const [, month, day] = fecha.split("-");
+  return `${day}/${month}`;
+}
+
+function ganador(p: PartidoFinal): "local" | "visitante" | null {
+  if (!p.jugado) return null;
+  if (p.penales_local !== null && p.penales_visitante !== null) {
+    return p.penales_local > p.penales_visitante ? "local" : "visitante";
+  }
+  if (p.goles_local !== null && p.goles_visitante !== null) {
+    if (p.goles_local > p.goles_visitante) return "local";
+    if (p.goles_local < p.goles_visitante) return "visitante";
+  }
+  return null;
+}
+
+const TeamRow = ({
+  equipo,
+  goles,
+  penales,
+  isWinner,
+  isPending,
+}: {
+  equipo: { nombre: string; escudo: string | null } | null;
+  goles: number | null;
+  penales: number | null;
+  isWinner: boolean;
+  isPending: boolean;
+}) => (
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "9px 12px",
+    gap: "8px",
+    borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+  }}>
+    <img
+      src={equipo?.escudo ?? "/escudos/generico.svg"}
+      alt={equipo?.nombre ?? ""}
+      width={18}
+      height={18}
+      style={{ objectFit: "contain", flexShrink: 0 }}
+    />
+    <span style={{
+      flex: 1,
+      fontSize: "12px",
+      fontWeight: 500,
+      color: equipo ? (isWinner ? "#4ade80" : "rgba(255,255,255,0.85)") : "rgba(255,255,255,0.3)",
+    }}>
+      {equipo?.nombre ?? "Por definir"}
+    </span>
+    {!isPending && goles !== null && (
+      <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+        <span style={{
+          fontSize: "13px",
+          fontWeight: 500,
+          color: isWinner ? "#4ade80" : "rgba(255,255,255,0.6)",
+        }}>
+          {goles}
+        </span>
+        {penales !== null && (
+          <span style={{ fontSize: "10px", color: "#fbbf24" }}>({penales})</span>
+        )}
+      </div>
+    )}
+    {isPending && (
+      <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.25)" }}>—</span>
+    )}
+  </div>
+);
+
+const MatchCard = ({
   partidos,
+  rondaLabel,
+  accentBorder,
 }: {
   partidos: PartidoFinal[];
-}) {
-  const sf1 = partidos
-    .filter((p) => p.ronda === "semifinal1")
-    .sort((a, b) => a.partido - b.partido);
-  const sf2 = partidos
-    .filter((p) => p.ronda === "semifinal2")
-    .sort((a, b) => a.partido - b.partido);
-  const final = partidos
-    .filter((p) => p.ronda === "final")
-    .sort((a, b) => a.partido - b.partido);
-
-  function resultado(p: PartidoFinal) {
-    if (!p.jugado) return "—";
-    let r = `${p.goles_local} - ${p.goles_visitante}`;
-    if (p.penales_local !== null && p.penales_visitante !== null) {
-      r += ` (${p.penales_local}-${p.penales_visitante} pen)`;
-    }
-    return r;
-  }
-
-  const MatchCard = ({
-    partidos,
-    titulo,
-  }: {
-    partidos: PartidoFinal[];
-    titulo: string;
-  }) => (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.07)",
-        border: "0.5px solid rgba(255,255,255,0.12)",
-        borderRadius: "10px",
-        overflow: "hidden",
-      }}
-    >
-      {partidos.map((p, i) => (
+  rondaLabel: string;
+  accentBorder?: boolean;
+}) => (
+  <div style={{
+    background: "rgba(255,255,255,0.07)",
+    border: `0.5px solid ${accentBorder ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.12)"}`,
+    borderRadius: "10px",
+    overflow: "hidden",
+    marginBottom: "8px",
+  }}>
+    {partidos.map((p, i) => {
+      const w = ganador(p);
+      const isPending = !p.jugado;
+      return (
         <div key={p.id}>
-          <div
-            style={{
-              fontSize: "10px",
-              color: "rgba(255,255,255,0.35)",
-              padding: "4px 10px",
-              background: "rgba(0,0,0,0.2)",
-              borderTop: i > 0 ? "0.5px solid rgba(255,255,255,0.08)" : "none",
-              letterSpacing: "1px",
-            }}
-          >
-            Partido {p.partido}{" "}
-            {p.fecha ? `· ${p.fecha.split("-").reverse().join("/")}` : ""}
+          <div style={{
+            fontSize: "10px",
+            color: "rgba(255,255,255,0.3)",
+            padding: "4px 12px",
+            background: "rgba(0,0,0,0.2)",
+            borderTop: i > 0 ? "0.5px solid rgba(255,255,255,0.08)" : "none",
+            display: "flex",
+            justifyContent: "space-between",
+            letterSpacing: "1px",
+          }}>
+            <span>{rondaLabel} · Partido {p.partido}</span>
+            <span>{p.fecha ? formatFecha(p.fecha) : "Por jugar"}</span>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 10px",
-              gap: "6px",
-              borderTop: "0.5px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            {p.equipo_local?.escudo && (
-              <img
-                src={p.equipo_local.escudo}
-                alt=""
-                width={16}
-                height={16}
-                style={{ objectFit: "contain", flexShrink: 0 }}
-              />
-            )}
-            <span
-              style={{
-                flex: 1,
-                fontSize: "12px",
-                fontWeight: 500,
-                color: p.equipo_local
-                  ? "rgba(255,255,255,0.9)"
-                  : "rgba(255,255,255,0.3)",
-              }}
-            >
-              {p.equipo_local?.nombre ?? "Por definir"}
-            </span>
-            {p.jugado && (
-              <span
-                style={{ fontSize: "11px", color: "#4ade80", fontWeight: 500 }}
-              >
-                {resultado(p)}
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "8px 10px",
-              gap: "6px",
-              borderTop: "0.5px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            {p.equipo_visitante?.escudo && (
-              <img
-                src={p.equipo_visitante.escudo}
-                alt=""
-                width={16}
-                height={16}
-                style={{ objectFit: "contain", flexShrink: 0 }}
-              />
-            )}
-            <span
-              style={{
-                flex: 1,
-                fontSize: "12px",
-                fontWeight: 500,
-                color: p.equipo_visitante
-                  ? "rgba(255,255,255,0.9)"
-                  : "rgba(255,255,255,0.3)",
-              }}
-            >
-              {p.equipo_visitante?.nombre ?? "Por definir"}
-            </span>
+          <TeamRow
+            equipo={p.equipo_local}
+            goles={p.goles_local}
+            penales={p.penales_local}
+            isWinner={w === "local"}
+            isPending={isPending}
+          />
+          <div style={{ borderBottom: "none" }}>
+            <TeamRow
+              equipo={p.equipo_visitante}
+              goles={p.goles_visitante}
+              penales={p.penales_visitante}
+              isWinner={w === "visitante"}
+              isPending={isPending}
+            />
           </div>
         </div>
-      ))}
-    </div>
-  );
+      );
+    })}
+  </div>
+);
+
+export default function BracketFinal({ partidos }: { partidos: PartidoFinal[] }) {
+  const sf1 = partidos.filter((p) => p.ronda === "semifinal1").sort((a, b) => a.partido - b.partido);
+  const sf2 = partidos.filter((p) => p.ronda === "semifinal2").sort((a, b) => a.partido - b.partido);
+  const final = partidos.filter((p) => p.ronda === "final" && p.equipo_local !== null).sort((a, b) => a.partido - b.partido);
+
+  const colStyle: React.CSSProperties = { flex: 1, minWidth: 0 };
+  const labelStyle: React.CSSProperties = {
+    fontSize: "10px",
+    color: "rgba(255,255,255,0.3)",
+    letterSpacing: "2px",
+    textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: "8px",
+    display: "block",
+  };
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          marginBottom: "1rem",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "11px",
-            letterSpacing: "2px",
-            color: "rgba(255,255,255,0.4)",
-            textTransform: "uppercase",
-          }}
-        >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+        <span style={{ fontSize: "10px", letterSpacing: "2px", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
           Fase Final
         </span>
-        <div
-          style={{
-            flex: 1,
-            height: "0.5px",
-            background: "rgba(255,255,255,0.1)",
-          }}
-        ></div>
+        <div style={{ flex: 1, height: "0.5px", background: "rgba(255,255,255,0.1)" }}></div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 32px 1fr 32px 1fr",
-          gap: "0",
-          alignItems: "center",
-        }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 24px 1fr 24px 1fr", alignItems: "center" }}>
+
         {/* Semifinales */}
-        <div>
-          <p
-            style={{
-              fontSize: "10px",
-              color: "rgba(255,255,255,0.3)",
-              letterSpacing: "1px",
-              textAlign: "center",
-              marginBottom: "8px",
-            }}
-          >
-            SEMIFINALES
-          </p>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <MatchCard partidos={sf1} titulo="SF1" />
-            <MatchCard partidos={sf2} titulo="SF2" />
-          </div>
+        <div style={colStyle}>
+          <span style={labelStyle}>Semifinales</span>
+          <MatchCard partidos={sf1} rondaLabel="SF1" />
+          <MatchCard partidos={sf2} rondaLabel="SF2" accentBorder />
         </div>
 
         {/* Conector izquierdo */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg width="32" height="120" viewBox="0 0 32 120" fill="none">
-            <path
-              d="M0 30 H16 V90 H0"
-              stroke="rgba(255,255,255,0.15)"
-              strokeWidth="0.5"
-              fill="none"
-            />
-            <line
-              x1="16"
-              y1="60"
-              x2="32"
-              y2="60"
-              stroke="rgba(255,255,255,0.15)"
-              strokeWidth="0.5"
-            />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", alignSelf: "stretch" }}>
+          <svg width="24" height="100%" viewBox="0 0 24 200" preserveAspectRatio="none" fill="none">
+            <path d="M0 60 H12 V140 H0" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" fill="none"/>
+            <line x1="12" y1="100" x2="24" y2="100" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5"/>
           </svg>
         </div>
 
         {/* Final */}
-        <div>
-          <p
-            style={{
-              fontSize: "10px",
-              color: "rgba(255,255,255,0.3)",
-              letterSpacing: "1px",
-              textAlign: "center",
-              marginBottom: "4px",
-            }}
-          >
-            FINAL
-          </p>
-          <div
-            style={{
-              textAlign: "center",
-              fontSize: "28px",
-              marginBottom: "6px",
-            }}
-          >
-            🏆
-          </div>
-          <div
-            style={{
+        <div style={colStyle}>
+          <span style={labelStyle}>Final</span>
+          <div style={{ textAlign: "center", fontSize: "24px", marginBottom: "6px" }}>🏆</div>
+          {final.length > 0 ? (
+            <MatchCard partidos={final} rondaLabel="Final" accentBorder />
+          ) : (
+            <div style={{
               background: "rgba(255,255,255,0.07)",
-              border: "0.5px solid rgba(52,211,153,0.3)",
+              border: "0.5px solid rgba(52,211,153,0.2)",
               borderRadius: "10px",
-              overflow: "hidden",
-            }}
-          >
-            {final.map((p, i) => (
-              <div key={p.id}>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    color: "rgba(255,255,255,0.35)",
-                    padding: "4px 10px",
-                    background: "rgba(0,0,0,0.2)",
-                    borderTop:
-                      i > 0 ? "0.5px solid rgba(255,255,255,0.08)" : "none",
-                    letterSpacing: "1px",
-                  }}
-                >
-                  Partido {p.partido}{" "}
-                  {p.fecha ? `· ${p.fecha.split("-").reverse().join("/")}` : ""}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 10px",
-                    gap: "6px",
-                    borderTop: "0.5px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  {p.equipo_local?.escudo && (
-                    <img
-                      src={p.equipo_local.escudo}
-                      alt=""
-                      width={16}
-                      height={16}
-                      style={{ objectFit: "contain", flexShrink: 0 }}
-                    />
-                  )}
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: p.equipo_local
-                        ? "rgba(255,255,255,0.9)"
-                        : "rgba(255,255,255,0.3)",
-                    }}
-                  >
-                    {p.equipo_local?.nombre ?? "Por definir"}
-                  </span>
-                  {p.jugado && (
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        color: "#4ade80",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {resultado(p)}
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 10px",
-                    gap: "6px",
-                    borderTop: "0.5px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  {p.equipo_visitante?.escudo && (
-                    <img
-                      src={p.equipo_visitante.escudo}
-                      alt=""
-                      width={16}
-                      height={16}
-                      style={{ objectFit: "contain", flexShrink: 0 }}
-                    />
-                  )}
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: p.equipo_visitante
-                        ? "rgba(255,255,255,0.9)"
-                        : "rgba(255,255,255,0.3)",
-                    }}
-                  >
-                    {p.equipo_visitante?.nombre ?? "Por definir"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+              padding: "1rem",
+              textAlign: "center",
+            }}>
+              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>Por definir</span>
+            </div>
+          )}
         </div>
 
         {/* Conector derecho */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg width="32" height="40" viewBox="0 0 32 40" fill="none">
-            <line
-              x1="0"
-              y1="20"
-              x2="32"
-              y2="20"
-              stroke="rgba(255,255,255,0.15)"
-              strokeWidth="0.5"
-            />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="24" height="40" viewBox="0 0 24 40" fill="none">
+            <line x1="0" y1="20" x2="24" y2="20" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5"/>
           </svg>
         </div>
 
         {/* Campeón */}
-        <div>
-          <p
-            style={{
-              fontSize: "10px",
-              color: "rgba(255,255,255,0.3)",
-              letterSpacing: "1px",
-              textAlign: "center",
-              marginBottom: "8px",
-            }}
-          >
-            CAMPEÓN
-          </p>
-          <div
-            style={{
-              textAlign: "center",
-              padding: "1.5rem 1rem",
-              background: "rgba(255,255,255,0.07)",
-              border: "0.5px solid rgba(255,255,255,0.12)",
-              borderRadius: "10px",
-            }}
-          >
-            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🥇</div>
-            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>
-              Por definir
-            </div>
+        <div style={colStyle}>
+          <span style={labelStyle}>Campeón</span>
+          <div style={{
+            background: "rgba(255,255,255,0.07)",
+            border: "0.5px solid rgba(255,255,255,0.12)",
+            borderRadius: "10px",
+            padding: "1rem",
+            textAlign: "center",
+          }}>
+            <div style={{ fontSize: "28px", marginBottom: "8px" }}>🥇</div>
+            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>Por definir</div>
           </div>
         </div>
+
       </div>
     </div>
   );
